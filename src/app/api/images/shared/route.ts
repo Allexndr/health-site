@@ -54,14 +54,14 @@ export async function GET(request: NextRequest) {
 
     // Для демонстрации возвращаем мок данные
     // В реальной системе здесь был бы запрос к базе данных изображений
-    const sharedImages = approvedShares.map((share, index) => {
+    const sharedImages = approvedShares.map((share: any, index) => {
       const mockImage = mockImages[index % mockImages.length]
       return {
         ...mockImage,
         id: share.imageId,
         shareType: share.shareType,
         sharedFrom: share.fromClinicId,
-        shareId: share._id.toString(),
+        shareId: share._id?.toString() || share.id,
       }
     })
 

@@ -12,6 +12,7 @@
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "axios": "^1.6.2",
+    "mongoose": "^8.3.2",
     "next": "14.0.4",
     "next-auth": "^4.24.5",
     "react": "^18.2.0",
@@ -19,13 +20,14 @@
     "react-query": "^3.39.3",
     "sharp": "^0.33.0",
     "sonner": "^2.0.6",
-    "zod": "^3.22.4",
-    "mongoose": "^8.3.2"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.10.4",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.55.0",
     "eslint-config-next": "14.0.4",

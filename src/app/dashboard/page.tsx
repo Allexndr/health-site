@@ -186,7 +186,7 @@ export default function DashboardPage() {
                 Welcome back, {user?.name || 'Clinic'}
               </h1>
               <p className="text-gray-600">
-                Here's what's happening with your medical imaging platform
+                Here&apos;s what&apos;s happening with your medical imaging platform
               </p>
             </div>
           </div>
