@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { demoStorage, type DemoImage } from '@/lib/demo-storage'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,16 @@ export async function POST(request: NextRequest) {
       console.log('Demo mode: proceeding without authentication')
     }
 
+    // Проверяем тип контента
+    const contentType = request.headers.get('content-type')
+    
+    if (!contentType || !contentType.includes('multipart/form-data')) {
+      return NextResponse.json(
+        { detail: 'Требуется multipart/form-data с файлом' },
+        { status: 400 }
+      )
+    }
+
     // Получаем данные формы
     const formData = await request.formData()
     const file = formData.get('file') as File
@@ -21,9 +32,9 @@ export async function POST(request: NextRequest) {
     const modality = formData.get('modality') as string
 
     // Проверяем наличие файла
-    if (!file) {
+    if (!file || !(file instanceof File)) {
       return NextResponse.json(
-        { detail: 'Файл не предоставлен' },
+        { detail: 'Файл не предоставлен или имеет неверный формат' },
         { status: 400 }
       )
     }
@@ -36,21 +47,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Демонстрационная загрузка - просто возвращаем успех
-    // В реальной реализации здесь была бы загрузка в Cloudinary
+    // Создаем новое изображение
     const mockImageId = Math.random().toString(36).substr(2, 9)
-    const mockUrl = `https://demo-storage.example.com/images/${mockImageId}_${file.name}`
-
-    return NextResponse.json({ 
+    const mockUrl = `https://placehold.co/800x600/e2e8f0/475569?text=${encodeURIComponent(file.name)}`
+    
+    const newImage: DemoImage = {
       id: mockImageId,
-      url: mockUrl,
       filename: file.name,
+      file_path: mockUrl,
+      mime_type: file.type,
+      clinic_id: '1',
+      uploaded_by: '1',
+      created_at: new Date().toISOString(),
+      patient_id: patientId || `PAT_${Date.now()}`,
       patient_name: patientName,
-      patient_id: patientId,
       study_date: studyDate,
-      modality: modality,
-      uploaded_at: new Date().toISOString()
-    })
+      modality: modality
+    }
+
+    // Добавляем в общее хранилище
+    demoStorage.addImage(newImage)
+
+    return NextResponse.json(newImage)
   } catch (error) {
     console.error('Ошибка загрузки:', error)
     return NextResponse.json(

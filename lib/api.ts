@@ -210,7 +210,7 @@ class ApiClient {
   }
 
   async uploadImage(data: ImageUploadRequest): Promise<ApiResponse<any>> {
-    return this.uploadFile('/images/cloudinary/upload', data.file, {
+    return this.uploadFile('/images/upload', data.file, {
       clinic_id: data.clinic_id,
       patient_id: data.patient_id,
       patient_name: data.patient_name,

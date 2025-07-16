@@ -48,7 +48,9 @@ export async function POST(request: NextRequest) {
       // Return token response that matches frontend expectations
       return NextResponse.json({ 
         access_token: token,
-        token_type: 'bearer'
+        token: token, // For compatibility with different clients
+        token_type: 'bearer',
+        user: clinic
       })
     }
 

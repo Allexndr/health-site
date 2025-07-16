@@ -132,11 +132,17 @@ export default function ImagesPage() {
         return
       }
 
-      toast.success('Image deleted successfully')
-      setImages(images.filter(img => img.id !== imageId))
+      toast.success('Снимок успешно удален')
+      // Обновляем список изображений
+      const updatedImages = images.filter(img => img.id !== imageId)
+      setImages(updatedImages)
       setDeleteConfirm(null)
+      
+      // Перезагружаем данные с сервера для синхронизации
+      await loadImages()
     } catch (error) {
-      toast.error('Failed to delete image')
+      toast.error('Не удалось удалить снимок')
+      console.error('Delete error:', error)
     }
   }
 
