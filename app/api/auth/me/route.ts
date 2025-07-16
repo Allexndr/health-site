@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     // For now, return mock clinic data since we're using the demo login
     // In a real implementation, this would verify the JWT and get clinic from database
     const authHeader = request.headers.get('authorization')
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { detail: 'Not authenticated' },

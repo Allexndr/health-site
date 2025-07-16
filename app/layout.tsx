@@ -7,8 +7,8 @@ import { AuthProvider } from '@/lib/providers/AuthProvider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Medical Imaging Platform',
-  description: 'Centralized X-ray Image Management System',
+  title: 'DentalCloud - Система управления стоматологическими снимками',
+  description: 'Централизованная система управления рентгеновскими снимками для стоматологических клиник',
 }
 
 export default function RootLayout({
@@ -20,10 +20,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="min-h-screen bg-gray-50">
-            {children}
-          </div>
-          <Toaster richColors position="top-right" />
+        <div className="min-h-screen bg-gray-50">
+          {children}
+        </div>
+        <Toaster richColors position="top-right" />
         </AuthProvider>
       </body>
     </html>

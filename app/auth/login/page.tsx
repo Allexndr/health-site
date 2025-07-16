@@ -46,7 +46,7 @@ export default function LoginPage() {
 
     try {
       const result = await login(formData)
-      
+
       if (result.success) {
         router.push('/dashboard')
       } else {
@@ -65,19 +65,19 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex items-center justify-center space-x-2 mb-8">
-            <div className="bg-blue-600 rounded-lg p-2">
-              <SparklesIcon className="h-6 w-6 text-white" />
-            </div>
+              <div className="bg-blue-600 rounded-lg p-2">
+                <SparklesIcon className="h-6 w-6 text-white" />
+              </div>
             <span className="text-xl font-bold text-gray-900">DentalCloud</span>
           </div>
 
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-            Вход в систему
-          </h2>
+              Вход в систему
+            </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Введите данные вашей стоматологической клиники для доступа к защищённому хранилищу рентгеновских снимков
-          </p>
-        </div>
+            </p>
+          </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow-xl rounded-lg sm:px-10">
@@ -162,7 +162,7 @@ export default function LoginPage() {
                 </span>
               </div>
             </form>
-          </div>
+                  </div>
 
           {/* Демо данные для тестирования */}
           <div className="mt-8">
@@ -192,11 +192,11 @@ export default function LoginPage() {
           <h1 className="text-4xl font-bold mb-6">
             Централизованное хранение{' '}
             <span className="text-cyan-300">стоматологических снимков</span>
-          </h1>
+              </h1>
           
           <p className="text-xl mb-8 text-blue-100">
             Безопасная облачная платформа для хранения и обмена рентгеновскими снимками между главной клиникой и 50 филиалами.
-          </p>
+              </p>
 
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
