@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { demoStorage, type DemoImage } from '@/lib/demo-storage'
 
+// Ensure dynamic route handling for Vercel
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     // Проверка авторизации (упрощено для демо)

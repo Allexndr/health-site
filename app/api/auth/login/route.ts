@@ -3,6 +3,10 @@ import type { NextRequest } from 'next/server'
 import { signToken, setAuthCookie } from '@/lib/auth'
 import { z } from 'zod'
 
+// Ensure dynamic route handling for Vercel
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 // Validation schema for login request
 const loginSchema = z.object({
   username: z.string().min(1),
