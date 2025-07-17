@@ -1,10 +1,7 @@
-import fs from 'fs'
-import path from 'path'
-
 // Общее хранилище для демо-режима
 // В реальной системе это была бы база данных
 
-interface DemoImage {
+export interface DemoImage {
   id: string
   filename: string
   file_path: string
@@ -19,16 +16,25 @@ interface DemoImage {
 }
 
 // Файл для хранения загруженных изображений
-const STORAGE_FILE = path.join(process.cwd(), '.demo-storage.json')
+const STORAGE_FILE = '.demo-storage.json'
 
 // Загруженные пользователем изображения
 let uploadedImages: DemoImage[] = []
 
-// Загружаем данные из файла при инициализации
+// Check if we're on the server side
+const isServer = typeof window === 'undefined'
+
+// Загружаем данные из файла при инициализации (только на сервере)
 function loadStoredImages() {
+  if (!isServer) return
+  
   try {
-    if (fs.existsSync(STORAGE_FILE)) {
-      const data = fs.readFileSync(STORAGE_FILE, 'utf8')
+    const fs = require('fs')
+    const path = require('path')
+    const filePath = path.join(process.cwd(), STORAGE_FILE)
+    
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8')
       uploadedImages = JSON.parse(data)
     }
   } catch (error) {
@@ -37,17 +43,25 @@ function loadStoredImages() {
   }
 }
 
-// Сохраняем данные в файл
+// Сохраняем данные в файл (только на сервере)
 function saveStoredImages() {
+  if (!isServer) return
+  
   try {
-    fs.writeFileSync(STORAGE_FILE, JSON.stringify(uploadedImages, null, 2))
+    const fs = require('fs')
+    const path = require('path')
+    const filePath = path.join(process.cwd(), STORAGE_FILE)
+    
+    fs.writeFileSync(filePath, JSON.stringify(uploadedImages, null, 2))
   } catch (error) {
     console.error('Error saving stored images:', error)
   }
 }
 
-// Загружаем данные при первом импорте
-loadStoredImages()
+// Загружаем данные при первом импорте (только на сервере)
+if (isServer) {
+  loadStoredImages()
+}
 
 // Статические демо-данные
 const staticMockImages: DemoImage[] = [
