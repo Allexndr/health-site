@@ -1,0 +1,52 @@
+{
+  "name": "medical-imaging-platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.19",
+    "@heroicons/react": "^2.2.0",
+    "@kitware/vtk.js": "^32.14.0",
+    "@types/jszip": "^3.4.0",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/three": "^0.170.0",
+    "axios": "^1.6.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cornerstone-core": "^2.6.1",
+    "cornerstone-tools": "^6.0.10",
+    "cornerstone-wado-image-loader": "^4.13.2",
+    "dicom-parser": "^1.8.21",
+    "eslint": "^8",
+    "eslint-config-next": "15.4.1",
+    "itk-wasm": "^1.0.0-b.182",
+    "jose": "^5.10.0",
+    "jszip": "^3.10.1",
+    "mongoose": "^8.3.2",
+    "next": "15.4.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-dropzone": "^14.3.8",
+    "sonner": "^1.7.4",
+    "tailwind-merge": "^3.3.1",
+    "three": "^0.170.0",
+    "three-stdlib": "^2.36.0",
+    "typescript": "^5",
+    "unzipper": "^0.12.3",
+    "vtk.js": "^30.10.0",
+    "yauzl-promise": "^4.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1"
+  }
+}
