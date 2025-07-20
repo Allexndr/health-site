@@ -6,7 +6,11 @@ import {
   MagnifyingGlassPlusIcon,
   ArrowPathIcon,
   BeakerIcon 
+<<<<<<< HEAD
 } from '@heroicons/react/outline'
+=======
+} from '@heroicons/react/24/outline'
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 import { Button } from '@/components/ui/Button'
 
 interface Point {

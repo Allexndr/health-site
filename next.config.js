@@ -25,6 +25,10 @@ const nextConfig = {
   reactStrictMode: true,
 }
 
+<<<<<<< HEAD
 module.exports = nextConfig 
 
 
+=======
+module.exports = nextConfig 
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a

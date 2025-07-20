@@ -12,19 +12,34 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex items-center justify-center space-x-2 mb-8">
+<<<<<<< HEAD
               <div className="bg-blue-600 rounded-lg p-2">
                 <SparklesIcon className="h-6 w-6 text-white" />
               </div>
+=======
+            <div className="bg-blue-600 rounded-lg p-2">
+              <SparklesIcon className="h-6 w-6 text-white" />
+            </div>
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
             <span className="text-xl font-bold text-gray-900">DentalCloud</span>
           </div>
 
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
+<<<<<<< HEAD
               Вход в систему
             </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Введите данные вашей стоматологической клиники для доступа к защищённому хранилищу рентгеновских снимков
             </p>
           </div>
+=======
+            Вход в систему
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Введите данные вашей стоматологической клиники для доступа к защищённому хранилищу рентгеновских снимков
+          </p>
+        </div>
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <Suspense fallback={<div className="text-center p-8">Загрузка формы...</div>}>
@@ -32,7 +47,11 @@ export default function LoginPage() {
           </Suspense>
 
           {/* Демо данные для тестирования */}
+<<<<<<< HEAD
             <div className="mt-8">
+=======
+          <div className="mt-8">
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
               <div className="flex">
                 <CheckCircleIcon className="h-5 w-5 text-blue-400 mt-0.5" />
@@ -59,10 +78,17 @@ export default function LoginPage() {
           <h1 className="text-4xl font-bold mb-6">
             Централизованное хранение{' '}
             <span className="text-cyan-300">стоматологических снимков</span>
+<<<<<<< HEAD
               </h1>
           <p className="text-xl mb-8 text-blue-100">
             Безопасная облачная платформа для хранения и обмена рентгеновскими снимками между главной клиникой и 50 филиалами.
               </p>
+=======
+          </h1>
+          <p className="text-xl mb-8 text-blue-100">
+            Безопасная облачная платформа для хранения и обмена рентгеновскими снимками между главной клиникой и 50 филиалами.
+          </p>
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
               <h3 className="text-lg font-semibold mb-4">Статистика платформы</h3>
