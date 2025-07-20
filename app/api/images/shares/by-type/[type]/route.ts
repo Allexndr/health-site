@@ -6,11 +6,17 @@ import ImageShare from '@/models/ImageShare'
 
 export async function GET(
   request: NextRequest,
+<<<<<<< HEAD
   { params }: { params: Promise<{ type: string }> }
 ) {
   try {
     const { type } = await params
     
+=======
+  { params }: { params: { type: string } }
+) {
+  try {
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     await dbConnect()
     const user = await getAuthUser(request)
     
@@ -21,6 +27,11 @@ export async function GET(
       )
     }
 
+<<<<<<< HEAD
+=======
+    const { type } = params
+
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     if (type !== 'outgoing' && type !== 'incoming') {
       return NextResponse.json(
         { error: 'Invalid type. Must be "outgoing" or "incoming"' },
@@ -39,7 +50,11 @@ export async function GET(
       .sort({ createdAt: -1 })
       .lean()
 
+<<<<<<< HEAD
     const formattedShares = shares.map((share: any) => ({
+=======
+    const formattedShares = shares.map(share => ({
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
       id: share._id.toString(),
       imageId: share.imageId,
       fromClinicId: share.fromClinicId,

@@ -15,11 +15,17 @@ const mockUsers = new Map<string, any[]>()
 
 export async function GET(
   request: NextRequest,
+<<<<<<< HEAD
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
     
+=======
+  { params }: { params: { id: string } }
+) {
+  try {
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     // Проверка авторизации (упрощено для демо)
     const authHeader = request.headers.get('authorization')
     const isAuthenticated = authHeader && authHeader.startsWith('Bearer ')
@@ -31,7 +37,11 @@ export async function GET(
 
     // For MVP, return all users for the clinic
     // In production, filter based on user's access
+<<<<<<< HEAD
     const clinicUsers = mockUsers.get(id) || []
+=======
+    const clinicUsers = mockUsers.get(params.id) || []
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     
     // Add some demo users if none exist
     if (clinicUsers.length === 0) {
@@ -51,7 +61,11 @@ export async function GET(
           created_at: new Date().toISOString()
         }
       ]
+<<<<<<< HEAD
       mockUsers.set(id, demoUsers)
+=======
+      mockUsers.set(params.id, demoUsers)
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
       return NextResponse.json(demoUsers)
     }
     
@@ -67,11 +81,17 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
+<<<<<<< HEAD
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
     
+=======
+  { params }: { params: { id: string } }
+) {
+  try {
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     const user = await getAuthUser(request)
     if (!user || (user.role !== 'admin' && user.role !== 'doctor')) {
       return NextResponse.json(
@@ -84,6 +104,7 @@ export async function POST(
     const newUser = userSchema.parse(body)
 
     // Create new user
+<<<<<<< HEAD
     const clinicUsers = mockUsers.get(id) || []
     const userWithId = {
       id: String(clinicUsers.length + 1),
@@ -93,6 +114,17 @@ export async function POST(
 
     clinicUsers.push(userWithId)
     mockUsers.set(id, clinicUsers)
+=======
+    const clinicUsers = mockUsers.get(params.id) || []
+    const userWithId = {
+      id: String(clinicUsers.length + 1),
+      ...newUser,
+      clinicId: params.id,
+    }
+
+    clinicUsers.push(userWithId)
+    mockUsers.set(params.id, clinicUsers)
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 
     return NextResponse.json(userWithId)
   } catch (error) {
@@ -113,11 +145,17 @@ export async function POST(
 
 export async function PUT(
   request: NextRequest,
+<<<<<<< HEAD
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
     
+=======
+  { params }: { params: { id: string } }
+) {
+  try {
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     const user = await getAuthUser(request)
     if (!user || (user.role !== 'admin' && user.role !== 'doctor')) {
       return NextResponse.json(
@@ -131,7 +169,11 @@ export async function PUT(
     const updatedUser = userSchema.parse(updates)
 
     // Update user
+<<<<<<< HEAD
     const clinicUsers = mockUsers.get(id) || []
+=======
+    const clinicUsers = mockUsers.get(params.id) || []
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     const userIndex = clinicUsers.findIndex(u => u.id === userId)
 
     if (userIndex === -1) {
@@ -146,7 +188,11 @@ export async function PUT(
       ...updatedUser,
     }
 
+<<<<<<< HEAD
     mockUsers.set(id, clinicUsers)
+=======
+    mockUsers.set(params.id, clinicUsers)
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 
     return NextResponse.json(clinicUsers[userIndex])
   } catch (error) {
@@ -167,11 +213,17 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
+<<<<<<< HEAD
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
     
+=======
+  { params }: { params: { id: string } }
+) {
+  try {
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     const user = await getAuthUser(request)
     if (!user || (user.role !== 'admin' && user.role !== 'doctor')) {
       return NextResponse.json(
@@ -191,7 +243,11 @@ export async function DELETE(
     }
 
     // Delete user
+<<<<<<< HEAD
     const clinicUsers = mockUsers.get(id) || []
+=======
+    const clinicUsers = mockUsers.get(params.id) || []
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     const userIndex = clinicUsers.findIndex(u => u.id === userId)
 
     if (userIndex === -1) {
@@ -202,7 +258,11 @@ export async function DELETE(
     }
 
     const updatedUsers = clinicUsers.filter(u => u.id !== userId)
+<<<<<<< HEAD
     mockUsers.set(id, updatedUsers)
+=======
+    mockUsers.set(params.id, updatedUsers)
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 
     return NextResponse.json({ message: 'User deleted successfully' })
   } catch (error) {
@@ -212,6 +272,9 @@ export async function DELETE(
       { status: 500 }
     )
   }
+<<<<<<< HEAD
 }
 
+=======
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 } 

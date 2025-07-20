@@ -143,7 +143,11 @@ export default function UploadPage() {
 
           const response = await apiClient.uploadImage({
             file,
+<<<<<<< HEAD
             clinic_id: user.clinicId,
+=======
+            clinic_id: user._id,
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
             patient_id: metadata.patientId,
             patient_name: metadata.patientName,
             study_date: metadata.studyDate,

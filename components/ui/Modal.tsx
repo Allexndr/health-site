@@ -1,6 +1,10 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
+<<<<<<< HEAD
 import { XMarkIcon } from '@heroicons/react/outline'
+=======
+import { XMarkIcon } from '@heroicons/react/24/outline'
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 import { cn } from '@/lib/utils'
 
 export interface ModalProps {

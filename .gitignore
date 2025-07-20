@@ -1,9 +1,36 @@
+<<<<<<< HEAD
 # Dependencies
 node_modules/
+=======
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+<<<<<<< HEAD
 # Production builds
 .next/
 out/
@@ -67,6 +94,21 @@ temp_extract/
 Anel Aiyanovna Ibragimova_20250718102232.CT/
 Nurzhan Mavlenovich Akilbaev_20250718101548.CT/
 CT_20250718102232/
+=======
+# local env files
+.env*.local
+.env
+
+# demo storage
+.demo-storage.json
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 
 # Python
 __pycache__/
@@ -80,6 +122,7 @@ ENV/
 env.bak/
 venv.bak/
 
+<<<<<<< HEAD
 # Electron
 electron-app/node_modules/
 electron-app/dist/
@@ -87,3 +130,19 @@ electron-app/dist/
 # Test files
 test-*.html
 test-*.zip 
+=======
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db 
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a

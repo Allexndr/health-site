@@ -15,7 +15,11 @@ interface User {
 interface AuthContextType {
   user: User | null
   isLoading: boolean
+<<<<<<< HEAD
   login: (credentials: { username: string; password: string }) => Promise<{ success: boolean; error?: string }>
+=======
+  login: (credentials: { username: string; password: string }) => Promise<void>
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
   logout: () => void
 }
 
@@ -57,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(demoUser)
         localStorage.setItem('auth_user', JSON.stringify(demoUser))
         router.push('/dashboard')
+<<<<<<< HEAD
         return { success: true }
       } else {
         return { success: false, error: 'Неверные учетные данные' }
@@ -64,6 +69,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Login error:', error)
       return { success: false, error: 'Ошибка подключения к серверу' }
+=======
+      } else {
+        throw new Error('Неверные учетные данные')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      throw error
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     } finally {
       setIsLoading(false)
     }
@@ -95,4 +108,8 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
+<<<<<<< HEAD
 }
+=======
+} 
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a

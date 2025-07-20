@@ -45,7 +45,11 @@ export default function ImagesPage() {
     
     try {
       setLoading(true)
+<<<<<<< HEAD
       const response = await apiClient.getClinicImages(user.clinicId)
+=======
+      const response = await apiClient.getClinicImages(user._id)
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
       
       if (response.error) {
         toast.error(response.error)
@@ -83,7 +87,11 @@ export default function ImagesPage() {
       const response = await apiClient.getClinics()
       if (response.data) {
         // Фильтруем свою клинику из списка
+<<<<<<< HEAD
         const otherClinics = response.data.filter(clinic => clinic._id !== user?.clinicId)
+=======
+        const otherClinics = response.data.filter(clinic => clinic._id !== user?._id)
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
         setClinics(otherClinics)
       }
     } catch (error) {

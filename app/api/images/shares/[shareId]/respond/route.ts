@@ -12,11 +12,17 @@ const responseSchema = z.object({
 
 export async function POST(
   request: NextRequest,
+<<<<<<< HEAD
   { params }: { params: Promise<{ shareId: string }> }
 ) {
   try {
     const { shareId } = await params
     
+=======
+  { params }: { params: { shareId: string } }
+) {
+  try {
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
     await dbConnect()
     const user = await getAuthUser(request)
     
@@ -29,6 +35,10 @@ export async function POST(
 
     const body = await request.json()
     const responseData = responseSchema.parse(body)
+<<<<<<< HEAD
+=======
+    const { shareId } = params
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 
     // Находим запрос на обмен
     const imageShare = await ImageShare.findById(shareId)
@@ -90,6 +100,9 @@ export async function POST(
       { status: 500 }
     )
   }
+<<<<<<< HEAD
 }
 
+=======
+>>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 } 
