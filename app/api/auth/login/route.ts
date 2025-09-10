@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
         login: 'dental_clinic_1',
       }
 
-<<<<<<< HEAD
       // Create User object for JWT token
       const user = {
         id: '1',
@@ -58,10 +57,6 @@ export async function POST(request: NextRequest) {
 
       // Generate JWT token
       const token = await signToken(user)
-=======
-      // Generate JWT token
-      const token = await signToken(clinic)
->>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 
       // Return token response that matches frontend expectations
       return NextResponse.json({ 
@@ -91,9 +86,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-<<<<<<< HEAD
 }
-
-=======
->>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
-} 
