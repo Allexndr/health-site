@@ -8,17 +8,10 @@ export const dynamic = 'force-dynamic'
 
 export async function DELETE(
   request: NextRequest,
-<<<<<<< HEAD
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    
-=======
   { params }: { params: { id: string } }
 ) {
   try {
->>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
+    const { id } = params
     // Проверка авторизации (упрощено для демо)
     const authHeader = request.headers.get('authorization')
     const isAuthenticated = authHeader && authHeader.startsWith('Bearer ')
@@ -28,11 +21,7 @@ export async function DELETE(
       console.log('Demo mode: proceeding without authentication')
     }
 
-<<<<<<< HEAD
     const imageId = id
-=======
-    const imageId = params.id
->>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 
     if (!imageId) {
       return NextResponse.json(
@@ -77,17 +66,10 @@ export async function DELETE(
 
 export async function GET(
   request: NextRequest,
-<<<<<<< HEAD
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    
-=======
   { params }: { params: { id: string } }
 ) {
   try {
->>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
+    const { id } = params
     // Проверка авторизации (упрощено для демо)
     const authHeader = request.headers.get('authorization')
     const isAuthenticated = authHeader && authHeader.startsWith('Bearer ')
@@ -97,11 +79,7 @@ export async function GET(
       console.log('Demo mode: proceeding without authentication')
     }
 
-<<<<<<< HEAD
     const imageId = id
-=======
-    const imageId = params.id
->>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
 
     if (!imageId) {
       return NextResponse.json(
@@ -128,9 +106,4 @@ export async function GET(
       { status: 500 }
     )
   }
-<<<<<<< HEAD
 }
-
-=======
->>>>>>> 2c0f3f7c8d961fd85f95a431fb293f616442832a
-} 
