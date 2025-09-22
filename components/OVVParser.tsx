@@ -9,6 +9,7 @@ interface OVVVolumeInfo {
   center: { x: number, y: number, z: number }
   filterName: string
   guid: string
+  shape?: [number, number, number]
 }
 
 interface OVVData {
@@ -148,7 +149,7 @@ export default function OVVParser({ onDataLoaded }: { onDataLoaded: (data: OVVDa
       onDataLoaded({
         volumeInfo: {
           ...volumeInfo,
-          dimensions
+          shape: [dimensions.x, dimensions.y, dimensions.z] as [number, number, number]
         },
         volumeData,
         patientInfo

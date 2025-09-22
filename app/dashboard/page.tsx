@@ -1,410 +1,239 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@/lib/providers/AuthProvider'
-import { apiClient, Image } from '@/lib/api'
-import {
-  ArrowUpTrayIcon,
-  FolderIcon,
-  EyeIcon,
-  ClockIcon,
+import { 
   ChartBarIcon,
   UserGroupIcon,
-  ServerIcon,
-  CloudArrowUpIcon,
-  PhotoIcon,
-  CalendarDaysIcon,
+  ClipboardDocumentListIcon,
+  CalendarIcon,
+  HeartIcon,
+  BellIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
   ArrowTrendingUpIcon,
-  SparklesIcon
+  ArrowTrendingDownIcon,
+  EyeIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline'
-import { toast } from 'sonner'
 
-interface DashboardStats {
-  totalImages: number
-  imagesThisWeek: number
-  imagesThisMonth: number
-  totalStorageUsed: string
-  lastUpload: string | null
-  topModality: string | null
-}
+const stats = [
+  { name: 'Всего пациентов', value: '2,847', change: '+12%', changeType: 'positive', icon: UserGroupIcon },
+  { name: 'Активные записи', value: '156', change: '+8%', changeType: 'positive', icon: CalendarIcon },
+  { name: 'Завершенные исследования', value: '1,234', change: '+23%', changeType: 'positive', icon: ClipboardDocumentListIcon },
+  { name: 'Средний рейтинг', value: '4.8', change: '+0.2', changeType: 'positive', icon: HeartIcon },
+]
+
+const recentPatients = [
+  { id: 1, name: 'Анна Петрова', age: 34, lastVisit: '2 часа назад', status: 'Активен', avatar: '👩' },
+  { id: 2, name: 'Михаил Иванов', age: 45, lastVisit: '4 часа назад', status: 'Ожидает', avatar: '👨' },
+  { id: 3, name: 'Елена Сидорова', age: 28, lastVisit: '1 день назад', status: 'Завершен', avatar: '👩' },
+  { id: 4, name: 'Дмитрий Козлов', age: 52, lastVisit: '2 дня назад', status: 'Активен', avatar: '👨' },
+  { id: 5, name: 'Ольга Морозова', age: 41, lastVisit: '3 дня назад', status: 'Завершен', avatar: '👩' },
+]
+
+const upcomingAppointments = [
+  { id: 1, patient: 'Анна Петрова', time: '10:00', type: 'Консультация', doctor: 'Др. Смирнов' },
+  { id: 2, patient: 'Михаил Иванов', time: '11:30', type: 'Обследование', doctor: 'Др. Козлова' },
+  { id: 3, patient: 'Елена Сидорова', time: '14:00', type: 'Контрольный осмотр', doctor: 'Др. Петров' },
+  { id: 4, patient: 'Дмитрий Козлов', time: '15:30', type: 'Анализы', doctor: 'Др. Смирнов' },
+]
+
+const navItems = [
+  { name: 'Дашборд', href: '/dashboard', icon: '📊', color: 'bg-blue-50 text-blue-600' },
+  { name: 'Пациенты', href: '/patients', icon: '👥', color: 'hover:bg-green-50 hover:text-green-600' },
+  { name: 'Исследования', href: '/studies', icon: '🔬', color: 'hover:bg-purple-50 hover:text-purple-600' },
+  { name: 'Записи', href: '/appointments', icon: '📅', color: 'hover:bg-orange-50 hover:text-orange-600' },
+  { name: 'Отчеты', href: '/reports', icon: '📋', color: 'hover:bg-red-50 hover:text-red-600' },
+  { name: 'Аналитика', href: '/analytics', icon: '📈', color: 'hover:bg-indigo-50 hover:text-indigo-600' },
+  { name: 'Настройки', href: '/settings', icon: '⚙️', color: 'hover:bg-gray-50 hover:text-gray-600' },
+]
 
 export default function DashboardPage() {
-  const { user } = useAuth()
-  const [stats, setStats] = useState<DashboardStats>({
-    totalImages: 0,
-    imagesThisWeek: 0,
-    imagesThisMonth: 0,
-    totalStorageUsed: '0 MB',
-    lastUpload: null,
-    topModality: null
-  })
-  const [recentImages, setRecentImages] = useState<Image[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (user) {
-      loadDashboardData()
-    }
-  }, [user])
-
-  const loadDashboardData = async () => {
-    if (!user) return
-
-    try {
-      setLoading(true)
-      const response = await apiClient.getClinicImages(user._id)
-      
-      if (response.error) {
-        toast.error(response.error)
-        return
-      }
-
-      const images = response.data || []
-      
-      // Calculate statistics
-      const now = new Date()
-      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-
-      const imagesThisWeek = images.filter(img => 
-        new Date(img.created_at) >= oneWeekAgo
-      ).length
-
-      const imagesThisMonth = images.filter(img => 
-        new Date(img.created_at) >= oneMonthAgo
-      ).length
-
-      // Calculate storage used (approximate)
-      const averageFileSize = 50 // MB average per image
-      const totalStorageMB = images.length * averageFileSize
-      const totalStorageUsed = totalStorageMB > 1024 
-        ? `${(totalStorageMB / 1024).toFixed(1)} GB` 
-        : `${totalStorageMB} MB`
-
-      // Find most common modality
-      const modalityCount: { [key: string]: number } = {}
-      images.forEach(img => {
-        if (img.modality) {
-          modalityCount[img.modality] = (modalityCount[img.modality] || 0) + 1
-        }
-      })
-      const topModality = Object.keys(modalityCount).reduce((a, b) => 
-        modalityCount[a] > modalityCount[b] ? a : b, 
-        Object.keys(modalityCount)[0] || null
-      )
-
-      // Get last upload date
-      const lastUpload = images.length > 0 
-        ? new Date(Math.max(...images.map(img => new Date(img.created_at).getTime())))
-        : null
-
-      setStats({
-        totalImages: images.length,
-        imagesThisWeek,
-        imagesThisMonth,
-        totalStorageUsed,
-        lastUpload: lastUpload?.toISOString() || null,
-        topModality
-      })
-
-      // Get recent images (last 5)
-      const recent = images
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 5)
-      setRecentImages(recent)
-
-    } catch (error) {
-      toast.error('Failed to load dashboard data')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const formatRelativeTime = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInSeconds = (now.getTime() - date.getTime()) / 1000
-
-    if (diffInSeconds < 60) return 'Только что'
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} мин назад`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} ч назад`
-    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} дн назад`
-    return date.toLocaleDateString('ru-RU')
-  }
-
-  const getImagePreview = (image: Image) => {
-    if (image.file_path?.includes('cloudinary')) {
-      return image.file_path.replace('/upload/', '/upload/w_200,h_200,c_fill/')
-    }
-    return image.file_path || 'https://placehold.co/200x200/e2e8f0/475569?text=Preview'
-  }
-
-  const quickActions = [
-    {
-      name: 'Загрузить снимки',
-      description: 'Добавить новые рентгеновские снимки',
-      href: '/dashboard/images/upload',
-      icon: ArrowUpTrayIcon,
-      color: 'bg-blue-500 hover:bg-blue-600',
-    },
-    {
-      name: 'Галерея снимков',
-      description: 'Просмотреть все снимки',
-      href: '/dashboard/images',
-      icon: PhotoIcon,
-      color: 'bg-green-500 hover:bg-green-600',
-    },
-    {
-      name: 'Статистика',
-      description: 'Подробная аналитика',
-      href: '#',
-      icon: ChartBarIcon,
-      color: 'bg-purple-500 hover:bg-purple-600',
-    },
-  ]
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    )
-  }
-
   return (
-    <div className="py-6">
-      <div className="px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3">
-            <div className="bg-blue-600 rounded-lg p-2">
-              <SparklesIcon className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Добро пожаловать, {user?.name || 'Клиника'}
-              </h1>
-              <p className="text-gray-600">
-                Обзор активности вашей стоматологической платформы
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-slate-800 dark:to-indigo-900">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl animate-pulse animation-delay-4000"></div>
+      </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <PhotoIcon className="h-8 w-8 text-blue-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Всего снимков
-                    </dt>
-                    <dd className="text-2xl font-semibold text-gray-900">
-                      {stats.totalImages}
-                    </dd>
-                  </dl>
-                </div>
+      {/* Header */}
+      <header className="relative backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 border-b border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="flex h-20 items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-3 shadow-lg">
+                <HeartIcon className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">MediCloud</span>
+                <p className="text-xs text-gray-500 -mt-1 font-medium">Medical Solutions Platform</p>
               </div>
             </div>
-          </div>
+            
+            {/* Navigation Menu */}
+            <nav className="hidden lg:flex items-center space-x-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`px-4 py-2 text-gray-700 dark:text-gray-300 ${item.color} rounded-lg transition-all duration-200 font-medium flex items-center space-x-2 group`}
+                >
+                  <span className="text-lg group-hover:scale-110 transition-transform duration-200">{item.icon}</span>
+                  <span>{item.name}</span>
+                </Link>
+              ))}
+            </nav>
 
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <ArrowTrendingUpIcon className="h-8 w-8 text-green-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      За неделю
-                    </dt>
-                    <dd className="text-2xl font-semibold text-gray-900">
-                      {stats.imagesThisWeek}
-                    </dd>
-                  </dl>
-                </div>
+            <div className="flex items-center space-x-4">
+              <div className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-green-700 dark:text-green-400 font-medium">Система онлайн</span>
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <ServerIcon className="h-8 w-8 text-purple-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Использовано
-                    </dt>
-                    <dd className="text-2xl font-semibold text-gray-900">
-                      {stats.totalStorageUsed}
-                    </dd>
-                  </dl>
-                </div>
+              <div className="flex items-center space-x-2">
+                <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                  <BellIcon className="h-5 w-5" />
+                </button>
+                <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                  <MagnifyingGlassIcon className="h-5 w-5" />
+                </button>
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <ClockIcon className="h-8 w-8 text-orange-600" />
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">АС</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Последняя загрузка
-                    </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
-                      {stats.lastUpload ? formatRelativeTime(stats.lastUpload) : 'Ещё не загружали'}
-                    </dd>
-                  </dl>
-                </div>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Александр Смирнов</span>
               </div>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="lg:col-span-1">
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200">
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Быстрые действия</h3>
-                <div className="space-y-3">
-                  {quickActions.map((action) => (
-                    <Link
-                      key={action.name}
-                      href={action.href}
-                      className={`flex items-center p-3 rounded-lg transition-colors ${action.color} text-white group`}
-                    >
-                      <action.icon className="h-5 w-5 mr-3" />
-                      <div>
-                        <div className="font-medium">{action.name}</div>
-                        <div className="text-sm opacity-90">{action.description}</div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Clinic Info */}
-            <div className="mt-6 bg-white shadow-sm rounded-lg border border-gray-200">
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Информация о клинике</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Название клиники</span>
-                    <span className="text-sm font-medium text-gray-900">{user?.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">ID входа</span>
-                    <span className="text-sm font-medium text-gray-900">{user?.login}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Основной тип снимков</span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {stats.topModality || 'Не определен'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Снимков за месяц</span>
-                    <span className="text-sm font-medium text-gray-900">{stats.imagesThisMonth}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* Main Content */}
+      <main className="relative z-10">
+        <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Дашборд</h1>
+            <p className="text-gray-600 dark:text-gray-300">Обзор вашей медицинской практики</p>
           </div>
 
-          {/* Recent Images */}
-          <div className="lg:col-span-2">
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Недавние снимки</h3>
-                  <Link 
-                    href="/dashboard/images"
-                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Смотреть все →
-                  </Link>
-                </div>
-                
-                {recentImages.length === 0 ? (
-                  <div className="text-center py-12">
-                    <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">Пока нет снимков</h3>
-                    <p className="mt-1 text-sm text-gray-500">Начните с загрузки первого снимка.</p>
-                    <div className="mt-6">
-                      <Link
-                        href="/dashboard/images/upload"
-                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                      >
-                        <ArrowUpTrayIcon className="mr-2 h-4 w-4" />
-                        Загрузить снимок
-                      </Link>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            {stats.map((stat) => (
+              <div key={stat.name} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.name}</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{stat.value}</p>
+                    <div className="flex items-center mt-2">
+                      {stat.changeType === 'positive' ? (
+                        <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+                      ) : (
+                        <ArrowTrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
+                      )}
+                      <span className={`text-sm font-medium ${stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
+                        {stat.change}
+                      </span>
                     </div>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {recentImages.map((image) => (
-                      <Link
-                        key={image.id}
-                        href={`/dashboard/images/${image.id}`}
-                        className="group relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-3 py-2 shadow-sm hover:border-gray-400 hover:shadow-md transition-all"
-                      >
-                        <div className="flex-shrink-0">
-                          <img
-                            className="h-12 w-12 rounded-lg object-cover"
-                            src={getImagePreview(image)}
-                            alt={image.filename}
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="focus:outline-none">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {image.filename}
-                            </p>
-                            <div className="flex items-center space-x-2 text-xs text-gray-500">
-                              {image.patient_name && (
-                                <span>{image.patient_name}</span>
-                              )}
-                              {image.modality && (
-                                <>
-                                  <span>•</span>
-                                  <span>{image.modality}</span>
-                                </>
-                              )}
-                            </div>
-                            <p className="text-xs text-gray-500">
-                              {formatRelativeTime(image.created_at)}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <EyeIcon className="h-4 w-4 text-gray-400" />
-                        </div>
-                      </Link>
-                    ))}
+                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-3">
+                    <stat.icon className="h-6 w-6 text-white" />
                   </div>
-                )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Recent Patients */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Недавние пациенты</h2>
+                <Link href="/patients" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                  Посмотреть всех
+                </Link>
+              </div>
+              <div className="space-y-4">
+                {recentPatients.map((patient) => (
+                  <div key={patient.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white text-xl">
+                      {patient.avatar}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{patient.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Возраст: {patient.age} лет</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Последний визит: {patient.lastVisit}</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        patient.status === 'Активен' ? 'bg-green-100 text-green-800' :
+                        patient.status === 'Ожидает' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {patient.status}
+                      </span>
+                      <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <EyeIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Upcoming Appointments */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Ближайшие записи</h2>
+                <Link href="/appointments" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                  Посмотреть все
+                </Link>
+              </div>
+              <div className="space-y-4">
+                {upcomingAppointments.map((appointment) => (
+                  <div key={appointment.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200">
+                    <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center text-white">
+                      <ClockIcon className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{appointment.patient}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{appointment.type}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Врач: {appointment.doctor}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">{appointment.time}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Сегодня</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
+
+          {/* Quick Actions */}
+          <div className="mt-8 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Быстрые действия</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link href="/patients/new" className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+                <PlusIcon className="h-6 w-6" />
+                <span className="font-medium">Новый пациент</span>
+              </Link>
+              <Link href="/appointments/new" className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+                <CalendarIcon className="h-6 w-6" />
+                <span className="font-medium">Новая запись</span>
+              </Link>
+              <Link href="/studies/new" className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+                <ClipboardDocumentListIcon className="h-6 w-6" />
+                <span className="font-medium">Новое исследование</span>
+              </Link>
+              <Link href="/reports" className="flex items-center space-x-3 p-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+                <ChartBarIcon className="h-6 w-6" />
+                <span className="font-medium">Отчеты</span>
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   )
-} 
+}

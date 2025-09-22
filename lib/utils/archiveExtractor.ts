@@ -44,7 +44,7 @@ export class ArchiveExtractor {
       
     } catch (error) {
       console.error('❌ Ошибка извлечения из архива:', error)
-      throw new Error(`Не удалось извлечь файлы из архива: ${error.message}`)
+      throw new Error(`Не удалось извлечь файлы из архива: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
     }
   }
 
