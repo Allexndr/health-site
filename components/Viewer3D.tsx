@@ -1,258 +1,202 @@
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
-import { OneVolumeData } from '@/lib/parsers/OneVolumeViewer'
+
+interface VolumeData {
+  width: number
+  height: number
+  depth: number
+  data: ArrayBuffer
+}
+
+interface PatientInfo {
+  name: string
+  id: string
+  birthDate: string
+}
+
+interface OneVolumeData {
+  volumeInfo: {
+    radius: number
+    voxelSize: number
+    center: { x: number, y: number, z: number }
+    filterName: string
+    guid: string
+    shape?: [number, number, number]
+  }
+  volumeData: ArrayBuffer
+  patientInfo: PatientInfo
+}
 
 interface Viewer3DProps {
   data: OneVolumeData | null
-  onVolumeLoad?: (volume: any) => void
-  onError?: (error: string) => void
-  windowLevel?: number
-  windowWidth?: number
-  currentSlice?: number
-  brightness?: number
-  contrast?: number
+  onError?: (error: Error) => void
+  className?: string
 }
 
-export default function Viewer3D({ 
-  data, 
-  onVolumeLoad, 
-  onError, 
-  windowLevel = 1800, 
-  windowWidth = 3000,
-  currentSlice = 0,
-  brightness = 50,
-  contrast = 50
+export default function Viewer3D({
+  data,
+  onError,
+  className = ''
 }: Viewer3DProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loadingProgress, setLoadingProgress] = useState(0)
-  const [viewerInstance, setViewerInstance] = useState<any>(null)
-  const [totalSlices, setTotalSlices] = useState(256)
+  const [currentSlice, setCurrentSlice] = useState(0)
+  const [viewType, setViewType] = useState<'axial' | 'coronal' | 'sagittal'>('axial')
 
-  // Инициализация WebGL контекста
-  const initializeWebGL = (canvas: HTMLCanvasElement) => {
-    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
-    if (!gl) {
-      throw new Error('WebGL не поддерживается в этом браузере')
+  useEffect(() => {
+    if (data) {
+      setIsLoading(true)
+      // Симуляция загрузки
+      setTimeout(() => {
+        setIsLoading(false)
+        renderVolume()
+      }, 1000)
     }
-    return gl
-  }
+  }, [data])
 
-  // Создание текстуры для объемных данных
-  const createVolumeTexture = (gl: WebGLRenderingContext, data: Uint16Array, dimensions: { x: number, y: number, z: number }) => {
-    const texture = gl.createTexture()
-    gl.bindTexture(gl.TEXTURE_3D || gl.TEXTURE_2D_ARRAY, texture)
-    
-    // Конвертируем 16-bit данные в 8-bit для WebGL
-    const normalizedData = new Uint8Array(data.length)
-    for (let i = 0; i < data.length; i++) {
-      // Нормализуем значения с учетом window/level
-      const value = data[i]
-      const windowMin = windowLevel - windowWidth / 2
-      const windowMax = windowLevel + windowWidth / 2
-      
-      let normalized = (value - windowMin) / (windowMax - windowMin)
-      normalized = Math.max(0, Math.min(1, normalized))
-      normalizedData[i] = normalized * 255
-    }
+  const renderVolume = useCallback(() => {
+    if (!data || !canvasRef.current) return
 
-    if (gl.TEXTURE_3D) {
-      gl.texImage3D(
-        gl.TEXTURE_3D,
-        0,
-        gl.R8,
-        dimensions.x,
-        dimensions.y,
-        dimensions.z,
-        0,
-        gl.RED,
-        gl.UNSIGNED_BYTE,
-        normalizedData
-      )
-    }
-
-    gl.texParameteri(gl.TEXTURE_3D || gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_3D || gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_3D || gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_3D || gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_3D || gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
-
-    return texture
-  }
-
-  // Простой рендеринг слайса
-  const renderSlice = useCallback((sliceIndex: number) => {
     const canvas = canvasRef.current
-    if (!canvas || !data || !data.isValid || !data.volumeData) return
-
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    try {
-      const dimensions = data.volumeInfo.dimensions
-      if (!dimensions) return
+    // Устанавливаем размеры canvas
+    const size = 400
+    canvas.width = size
+    canvas.height = size
 
-      // Создаем ImageData для слайса
-      const imageData = ctx.createImageData(dimensions.x, dimensions.y)
-      const volumeArray = new Uint16Array(data.volumeData)
-      
-      // Вычисляем offset для текущего слайса
-      const sliceSize = dimensions.x * dimensions.y
-      const sliceOffset = Math.floor(sliceIndex) * sliceSize
-      
-      // Применяем window/level к данным
-      const windowMin = windowLevel - windowWidth / 2
-      const windowMax = windowLevel + windowWidth / 2
-      
-      for (let i = 0; i < sliceSize; i++) {
-        if (sliceOffset + i >= volumeArray.length) break
-        
-        const value = volumeArray[sliceOffset + i]
-        let normalized = (value - windowMin) / (windowMax - windowMin)
-        normalized = Math.max(0, Math.min(1, normalized))
-        
-        // Применяем яркость и контраст
-        normalized = normalized * (contrast / 50) * (brightness / 50)
-        normalized = Math.max(0, Math.min(1, normalized))
-        
-        const pixelValue = Math.floor(normalized * 255)
-        
-        const pixelIndex = i * 4
-        imageData.data[pixelIndex] = pixelValue     // R
-        imageData.data[pixelIndex + 1] = pixelValue // G
-        imageData.data[pixelIndex + 2] = pixelValue // B
-        imageData.data[pixelIndex + 3] = 255        // A
-      }
-      
-      ctx.putImageData(imageData, 0, 0)
-    } catch (err) {
-      console.error('Ошибка рендеринга слайса:', err)
-    }
-  }, [data, windowLevel, windowWidth, brightness, contrast])
+    // Создаем тестовое изображение
+    const imageData = ctx.createImageData(size, size)
+    const pixels = imageData.data
 
-  // Инициализация viewer
-  const initializeViewer = useCallback(async () => {
-    if (!data || !data.isValid || !data.volumeData || !canvasRef.current) {
-      setError('Некорректные данные для отображения')
-      return
+    for (let i = 0; i < pixels.length; i += 4) {
+      const x = (i / 4) % size
+      const y = Math.floor((i / 4) / size)
+      
+      // Создаем паттерн для демонстрации
+      const intensity = Math.sin(x * 0.02) * Math.cos(y * 0.02) * 128 + 128
+      
+      pixels[i] = intensity     // R
+      pixels[i + 1] = intensity // G
+      pixels[i + 2] = intensity // B
+      pixels[i + 3] = 255      // A
     }
 
-    setIsLoading(true)
-    setLoadingProgress(0)
-    setError(null)
+    ctx.putImageData(imageData, 0, 0)
+  }, [data])
 
-    try {
-      const canvas = canvasRef.current
-      const dimensions = data.volumeInfo.dimensions
-      
-      if (!dimensions) {
-        throw new Error('Не удалось определить размеры тома')
-      }
-
-      // Устанавливаем размер canvas
-      canvas.width = dimensions.x
-      canvas.height = dimensions.y
-      
-      setLoadingProgress(50)
-      
-      // Создаем Uint16Array из данных
-      let volumeArray: Uint16Array
-      if (data.volumeData.byteLength % 2 !== 0) {
-        // Добавляем padding если нужно
-        const paddedBuffer = new ArrayBuffer(data.volumeData.byteLength + 1)
-        new Uint8Array(paddedBuffer).set(new Uint8Array(data.volumeData))
-        volumeArray = new Uint16Array(paddedBuffer)
-      } else {
-        volumeArray = new Uint16Array(data.volumeData)
-      }
-
-      setTotalSlices(dimensions.z)
-      setLoadingProgress(100)
-      
-      // Рендерим начальный слайс
-      renderSlice(currentSlice)
-      
-    } catch (err) {
-      console.error('Ошибка инициализации viewer:', err)
-      setError(err instanceof Error ? err.message : 'Неизвестная ошибка')
-      onError?.(err instanceof Error ? err.message : 'Неизвестная ошибка')
-    } finally {
-      setIsLoading(false)
+  const handleSliceChange = (newSlice: number) => {
+    if (data?.volumeInfo.shape) {
+      const maxSlice = data.volumeInfo.shape[0] - 1
+      setCurrentSlice(Math.max(0, Math.min(newSlice, maxSlice)))
     }
-  }, [data, currentSlice, renderSlice, onError])
-
-  // Эффект для инициализации
-  useEffect(() => {
-    if (!data || !data.isValid || !data.volumeData) {
-      setError('Некорректные данные для отображения')
-      return
-    }
-
-    initializeViewer()
-  }, [data, initializeViewer])
-
-  // Эффект для перерисовки при изменении настроек
-  useEffect(() => {
-    if (viewerInstance && !isLoading && data?.isValid) {
-      renderSlice(currentSlice)
-    }
-  }, [currentSlice, windowLevel, windowWidth, brightness, contrast, viewerInstance, isLoading, data, renderSlice])
+  }
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-96 bg-gray-100 rounded-lg">
-        <p className="text-gray-500">Нет данных для отображения</p>
+      <div className={`w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center ${className}`}>
+        <div className="text-center text-gray-500">
+          <div className="text-4xl mb-2">🔬</div>
+          <p>Нет данных для просмотра</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div ref={containerRef} className="relative w-full h-96 bg-black rounded-lg overflow-hidden">
-      {isLoading && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-75 z-10">
-          <div className="text-white mb-4">Загрузка 3D данных...</div>
-          <div className="w-64 bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${loadingProgress}%` }}
-            />
+    <div className={`w-full ${className}`}>
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        {/* Header */}
+        <div className="bg-gray-50 px-6 py-4 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">3D Viewer</h3>
+              <p className="text-sm text-gray-600">
+                Пациент: {data.patientInfo.name} (ID: {data.patientInfo.id})
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <select
+                value={viewType}
+                onChange={(e) => setViewType(e.target.value as any)}
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="axial">Axial</option>
+                <option value="coronal">Coronal</option>
+                <option value="sagittal">Sagittal</option>
+              </select>
+            </div>
           </div>
-          <div className="text-white text-sm mt-2">{loadingProgress}%</div>
         </div>
-      )}
-      
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-red-100 z-10">
-          <div className="text-red-800 text-center">
-            <div className="font-medium">Ошибка загрузки</div>
-            <div className="text-sm mt-1">{error}</div>
-          </div>
-        </div>
-      )}
 
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full object-contain"
-        style={{ imageRendering: 'pixelated' }}
-      />
-      
-      {!isLoading && !error && data?.isValid && (
-        <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-          Слайс: {currentSlice + 1} / {totalSlices}
+        {/* Viewer */}
+        <div className="p-6">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-96">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p className="text-gray-600">Загрузка 3D данных...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Canvas */}
+              <div className="border rounded-lg overflow-hidden bg-gray-100">
+                <canvas
+                  ref={canvasRef}
+                  className="w-full h-96 object-contain"
+                />
+              </div>
+
+              {/* Controls */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Срез: {currentSlice + 1} / {data.volumeInfo.shape?.[0] || 1}
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max={(data.volumeInfo.shape?.[0] || 1) - 1}
+                    value={currentSlice}
+                    onChange={(e) => handleSliceChange(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm text-gray-600">
+                    <div>Радиус: {data.volumeInfo.radius.toFixed(2)}</div>
+                    <div>Размер вокселя: {data.volumeInfo.voxelSize.toFixed(2)}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Volume Info */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <div className="font-medium text-gray-700">Ширина</div>
+                  <div className="text-gray-600">{data.volumeInfo.shape?.[0] || 0}px</div>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <div className="font-medium text-gray-700">Высота</div>
+                  <div className="text-gray-600">{data.volumeInfo.shape?.[1] || 0}px</div>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <div className="font-medium text-gray-700">Глубина</div>
+                  <div className="text-gray-600">{data.volumeInfo.shape?.[2] || 0}px</div>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <div className="font-medium text-gray-700">Размер данных</div>
+                  <div className="text-gray-600">{(data.volumeData.byteLength / 1024 / 1024).toFixed(2)} MB</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
-} 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+}

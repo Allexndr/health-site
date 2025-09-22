@@ -2,11 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 
-interface ViewerProps {
-  searchParams: { file?: string }
-}
-
-export default function ViewerPage({ searchParams }: ViewerProps) {
+export default function ViewerPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -14,16 +10,22 @@ export default function ViewerPage({ searchParams }: ViewerProps) {
   const [currentSlice, setCurrentSlice] = useState(0)
   const [windowLevel, setWindowLevel] = useState(128)
   const [windowWidth, setWindowWidth] = useState(256)
+  const [filename, setFilename] = useState<string>('')
 
   useEffect(() => {
-    if (!searchParams.file) {
+    // Получаем параметры из URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const file = urlParams.get('file')
+    
+    if (!file) {
       setError('Файл не указан')
       setIsLoading(false)
       return
     }
-
-    loadVolumeData(searchParams.file)
-  }, [searchParams.file])
+    
+    setFilename(file)
+    loadVolumeData(file)
+  }, [])
 
   const loadVolumeData = async (filename: string) => {
     try {
@@ -132,7 +134,7 @@ export default function ViewerPage({ searchParams }: ViewerProps) {
       <div className="bg-gray-800 text-white p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">
-            {searchParams.file ? `Просмотр: ${searchParams.file}` : 'Рентген Viewer'}
+            {filename ? `Просмотр: ${filename}` : 'Рентген Viewer'}
           </h2>
           {isLoading && (
             <div className="flex items-center gap-2">

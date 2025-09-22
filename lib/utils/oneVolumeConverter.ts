@@ -71,7 +71,7 @@ export class OneVolumeConverter {
       }
     } catch (error) {
       console.error('❌ Ошибка конвертации:', error)
-      throw new Error(`Не удалось конвертировать в DICOM: ${error.message}`)
+      throw new Error(`Не удалось конвертировать в DICOM: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
     }
   }
 

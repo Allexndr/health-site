@@ -318,7 +318,7 @@ export default function VTKViewer3D({
             <div className="mt-6 p-3 bg-gray-800 rounded">
               <h4 className="text-sm font-medium mb-2">Информация о данных</h4>
               <div className="text-xs text-gray-300 space-y-1">
-                <div>Размеры: {Array.isArray(dimensions) ? dimensions.join(' × ') : `${dimensions.x} × ${dimensions.y} × ${dimensions.z}`}</div>
+                <div>Размеры: {Array.isArray(dimensions) ? dimensions.join(' × ') : 'Неизвестно'}</div>
                 <div>Вокселей: {volumeData.length.toLocaleString()}</div>
                 <div>Разрешение: {spacing[0]}mm</div>
                 {patientInfo && (

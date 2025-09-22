@@ -184,7 +184,7 @@ export default function MacOSVolumeViewer() {
   // Изменение типа среза
   const changeSliceType = (type: 'axial' | 'coronal' | 'sagittal') => {
     setSliceType(type)
-    setCurrentSlice(Math.floor(volumeInfo?.shape[0] / 2) || 0)
+    setCurrentSlice(Math.floor((volumeInfo?.shape[0] ?? 0) / 2))
   }
 
   // Обновление настроек окна/уровня

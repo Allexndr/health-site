@@ -56,7 +56,7 @@ export default function ArchiveExtractorComponent({ onFilesExtracted, onError }:
       console.error('❌ Ошибка извлечения:', error)
       onError?.(error as Error)
       toast.error('Ошибка обработки архива', {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Неизвестная ошибка',
         duration: 5000
       })
     } finally {
@@ -125,7 +125,7 @@ export default function ArchiveExtractorComponent({ onFilesExtracted, onError }:
     } catch (error) {
       console.error('❌ Ошибка конвертации:', error)
       toast.error('Ошибка конвертации', {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Неизвестная ошибка',
         duration: 5000
       })
     } finally {
@@ -162,7 +162,7 @@ export default function ArchiveExtractorComponent({ onFilesExtracted, onError }:
     } catch (error) {
       console.error('❌ Ошибка скачивания:', error)
       toast.error('Ошибка скачивания файлов', {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Неизвестная ошибка',
         duration: 5000
       })
     }
@@ -175,7 +175,7 @@ export default function ArchiveExtractorComponent({ onFilesExtracted, onError }:
     } catch (error) {
       console.error('❌ Ошибка скачивания файла:', error)
       toast.error('Ошибка скачивания файла', {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Неизвестная ошибка',
         duration: 3000
       })
     }

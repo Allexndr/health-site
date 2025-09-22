@@ -45,7 +45,7 @@ export async function verifyToken(token: string): Promise<AuthTokenPayload> {
       token,
       new TextEncoder().encode(JWT_SECRET)
     )
-    return payload as AuthTokenPayload
+    return payload as unknown as AuthTokenPayload
   } catch (error) {
     throw new Error('Invalid token')
   }
@@ -82,8 +82,9 @@ export function hasPermission(user: User, requiredRole: UserRole): boolean {
   return roleHierarchy[user.role] >= roleHierarchy[requiredRole]
 }
 
-export function setAuthCookie(token: string): void {
-  cookies().set(COOKIE_NAME, token, {
+export async function setAuthCookie(token: string): Promise<void> {
+  const cookieStore = await cookies()
+  cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
@@ -92,6 +93,7 @@ export function setAuthCookie(token: string): void {
   })
 }
 
-export function clearAuthCookie(): void {
-  cookies().delete(COOKIE_NAME)
+export async function clearAuthCookie(): Promise<void> {
+  const cookieStore = await cookies()
+  cookieStore.delete(COOKIE_NAME)
 } 

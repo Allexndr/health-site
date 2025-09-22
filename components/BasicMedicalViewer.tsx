@@ -200,10 +200,10 @@ export default function BasicMedicalViewer({ volumeData, onError }: BasicMedical
 
   // Обработчики управления
   const handleSliceChange = (newSlice: number) => {
-    const maxSlice = viewType === 'axial' ? loadedVolumeData?.depth - 1 : 
-                    viewType === 'coronal' ? loadedVolumeData?.height - 1 : 
-                    loadedVolumeData?.width - 1
-    if (maxSlice !== undefined) {
+    const maxSlice = viewType === 'axial' ? (loadedVolumeData?.depth ?? 0) - 1 : 
+                    viewType === 'coronal' ? (loadedVolumeData?.height ?? 0) - 1 : 
+                    (loadedVolumeData?.width ?? 0) - 1
+    if (maxSlice >= 0) {
       setCurrentSlice(Math.max(0, Math.min(newSlice, maxSlice)))
     }
   }

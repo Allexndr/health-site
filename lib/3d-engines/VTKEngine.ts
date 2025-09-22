@@ -265,7 +265,7 @@ class VTKEngine {
             <div style="text-align: center; padding: 20px;">
               <div style="color: #ef4444; margin-bottom: 16px;">⚠️ Ошибка инициализации VTK.js</div>
               <div style="font-size: 14px; color: #9ca3af; margin-bottom: 16px;">Попытка ${this.initializationAttempts} из ${this.maxAttempts}</div>
-              <div style="font-size: 12px; color: #6b7280;">${error.message}</div>
+              <div style="font-size: 12px; color: #6b7280;">${error instanceof Error ? error.message : 'Неизвестная ошибка'}</div>
             </div>
           </div>
         `
@@ -279,7 +279,7 @@ class VTKEngine {
         return
       }
       
-      throw new Error(`VTK инициализация провалилась: ${error.message}`)
+      throw new Error(`VTK инициализация провалилась: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
     }
   }
 
@@ -333,7 +333,7 @@ class VTKEngine {
 
     } catch (error) {
       console.error('❌ Ошибка установки данных объема:', error)
-      throw new Error(`Не удалось установить данные объема: ${error.message}`)
+      throw new Error(`Не удалось установить данные объема: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
     }
   }
 

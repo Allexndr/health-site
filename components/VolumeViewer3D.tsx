@@ -1,164 +1,165 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
-import { VolumeViewer3D, VolumeSettings } from '../lib/engines/VolumeViewer3D'
+import { VolumeViewer3D } from '../lib/engines/VolumeViewer3D'
 import { 
   AdjustmentsHorizontalIcon,
   EyeIcon,
   PhotoIcon,
   ArrowUpTrayIcon,
-  CubeIcon
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline'
+import { Button } from './ui/Button'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
 
 interface VolumeViewer3DProps {
-  onFileLoaded?: (fileName: string) => void
+  volumeData?: {
+    width: number
+    height: number
+    depth: number
+    data: ArrayBuffer
+  }
   onError?: (error: Error) => void
+  className?: string
 }
 
-export default function VolumeViewer3DComponent({ onFileLoaded, onError }: VolumeViewer3DProps) {
+export default function VolumeViewer3DComponent({
+  volumeData,
+  onError,
+  className = ''
+}: VolumeViewer3DProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [viewer, setViewer] = useState<VolumeViewer3D | null>(null)
+  const viewerRef = useRef<VolumeViewer3D | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [loadedFile, setLoadedFile] = useState<string | null>(null)
   const [showSettings, setShowSettings] = useState(false)
-  const [settings, setSettings] = useState<VolumeSettings>({
+  const [settings, setSettings] = useState({
     windowLevel: 0.5,
     windowWidth: 1.0,
     opacity: 0.8,
-    renderMode: 'volume',
-    threshold: 0.3,
-    colormap: 'bone'
+    slice: 0
   })
 
   useEffect(() => {
-    if (containerRef.current && !viewer) {
+    if (containerRef.current && !viewerRef.current) {
       try {
-        console.log('🚀 Инициализация VolumeViewer3D...')
-        console.log('📦 Контейнер:', containerRef.current)
-        
-        const newViewer = new VolumeViewer3D(containerRef.current)
-        setViewer(newViewer)
+        setIsLoading(true)
+        const viewer = new VolumeViewer3D(containerRef.current)
+        viewerRef.current = viewer
         console.log('✅ VolumeViewer3D успешно создан')
       } catch (error) {
         console.error('❌ Ошибка инициализации VolumeViewer3D:', error)
-        console.error('📊 Детали ошибки:', {
-          message: error.message,
-          stack: error.stack,
-          containerExists: !!containerRef.current,
-          containerDimensions: containerRef.current ? {
-            width: containerRef.current.clientWidth,
-            height: containerRef.current.clientHeight
-          } : null
-        })
+        setError(error instanceof Error ? error.message : 'Неизвестная ошибка')
         onError?.(error as Error)
-        
-        // Показываем простое сообщение об ошибке в контейнере
-        if (containerRef.current) {
-          containerRef.current.innerHTML = `
-            <div style="color: white; padding: 20px; text-align: center;">
-              <h3>Ошибка инициализации 3D движка</h3>
-              <p>${error.message}</p>
-              <p style="font-size: 12px; opacity: 0.7;">Проверьте консоль для подробностей</p>
-            </div>
-          `
-        }
+      } finally {
+        setIsLoading(false)
       }
     }
 
     return () => {
-      if (viewer) {
-        console.log('🧹 Очистка VolumeViewer3D...')
-        try {
-          viewer.dispose()
-        } catch (error) {
-          console.warn('⚠️ Ошибка при очистке:', error)
-        }
+      if (viewerRef.current) {
+        viewerRef.current.dispose()
+        viewerRef.current = null
       }
     }
-  }, [])
+  }, [onError])
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !viewer) return
+  useEffect(() => {
+    if (viewerRef.current && volumeData) {
+      try {
+        viewerRef.current.setVolumeData(volumeData)
+        viewerRef.current.render()
+        setLoadedFile(`Volume ${volumeData.width}×${volumeData.height}×${volumeData.depth}`)
+      } catch (error) {
+        console.error('❌ Ошибка загрузки данных:', error)
+        setError(error instanceof Error ? error.message : 'Неизвестная ошибка')
+        onError?.(error as Error)
+      }
+    }
+  }, [volumeData, onError])
 
-    setIsLoading(true)
-    try {
-      await viewer.loadVolumeFile(file)
-      setLoadedFile(file.name)
-      onFileLoaded?.(file.name)
-    } catch (error) {
-      console.error('Ошибка загрузки файла:', error)
-      onError?.(error as Error)
-    } finally {
-      setIsLoading(false)
+  const handleExportImage = () => {
+    if (viewerRef.current) {
+      try {
+        const imageData = viewerRef.current.exportImage()
+        const link = document.createElement('a')
+        link.href = imageData
+        link.download = 'volume-view.png'
+        link.click()
+      } catch (error) {
+        console.error('Ошибка экспорта изображения:', error)
+      }
     }
   }
 
-  const updateSettings = (newSettings: Partial<VolumeSettings>) => {
-    const updatedSettings = { ...settings, ...newSettings }
-    setSettings(updatedSettings)
-    viewer?.updateSettings(updatedSettings)
+  const handleExportData = () => {
+    if (viewerRef.current) {
+      try {
+        const data = viewerRef.current.exportData()
+        if (data) {
+          const blob = new Blob([data.data], { type: 'application/octet-stream' })
+          const link = document.createElement('a')
+          link.href = URL.createObjectURL(blob)
+          link.download = 'volume-data.bin'
+          link.click()
+        }
+      } catch (error) {
+        console.error('Ошибка экспорта данных:', error)
+      }
+    }
+  }
+
+  const handleSettingsChange = (key: string, value: number) => {
+    const newSettings = { ...settings, [key]: value }
+    setSettings(newSettings)
+    
+    if (viewerRef.current) {
+      if (key === 'windowLevel') {
+        viewerRef.current.setWindowLevel(value)
+      } else if (key === 'windowWidth') {
+        viewerRef.current.setWindowWidth(value)
+      } else if (key === 'slice') {
+        viewerRef.current.setSlice(value)
+      }
+    }
   }
 
   return (
-    <div className="relative w-full h-full bg-black rounded-lg overflow-hidden">
-      {/* 3D Viewer Container */}
-      <div 
-        ref={containerRef} 
-        className="w-full h-full"
-        style={{ minHeight: '600px' }}
-      />
-
-      {/* Controls Overlay */}
-      <div className="absolute top-4 left-4 flex flex-col gap-2">
-        {/* File Upload */}
-        <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3">
-          <label className="flex items-center gap-2 cursor-pointer text-white hover:text-blue-400 transition-colors">
-            <ArrowUpTrayIcon className="w-5 h-5" />
-            <span className="text-sm">Загрузить CT снимок</span>
-            <input
-              type="file"
-              accept=".zip,.vol,.raw,.dcm,.dicom"
-              onChange={handleFileUpload}
-              className="hidden"
-              disabled={isLoading}
-            />
-          </label>
-        </div>
-
-        {/* Settings Toggle */}
-        <button
-          onClick={() => setShowSettings(!showSettings)}
-          className="bg-black/80 backdrop-blur-sm rounded-lg p-3 text-white hover:text-blue-400 transition-colors flex items-center gap-2"
-        >
-          <AdjustmentsHorizontalIcon className="w-5 h-5" />
-          <span className="text-sm">Настройки</span>
-        </button>
-
-        {/* Current File Info */}
-        {loadedFile && (
-          <div className="bg-green-900/80 backdrop-blur-sm rounded-lg p-3 text-white">
-            <div className="flex items-center gap-2 text-sm">
-              <CubeIcon className="w-4 h-4" />
-              <span>Загружен: {loadedFile}</span>
+    <div className={`w-full ${className}`}>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span className="text-2xl">🔬</span>
+            Volume Viewer 3D
+            {loadedFile && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                - {loadedFile}
+              </span>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 font-medium">Ошибка:</p>
+              <p className="text-red-600 text-sm">{error}</p>
             </div>
+          )}
+
+          {/* Viewer Container */}
+          <div className="border rounded-lg overflow-hidden bg-gray-100">
+            <div
+              ref={containerRef}
+              className="w-full h-96"
+            />
           </div>
-        )}
-      </div>
 
-      {/* Settings Panel */}
-      {showSettings && (
-        <div className="absolute top-4 right-4 bg-black/90 backdrop-blur-sm rounded-lg p-4 text-white min-w-[280px]">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <EyeIcon className="w-5 h-5" />
-            Настройки визуализации
-          </h3>
-
-          <div className="space-y-4">
-            {/* Window Level */}
+          {/* Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Уровень окна: {(settings.windowLevel * 100).toFixed(0)}%
+                Уровень окна: {settings.windowLevel.toFixed(2)}
               </label>
               <input
                 type="range"
@@ -166,119 +167,113 @@ export default function VolumeViewer3DComponent({ onFileLoaded, onError }: Volum
                 max="1"
                 step="0.01"
                 value={settings.windowLevel}
-                onChange={(e) => updateSettings({ windowLevel: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                onChange={(e) => handleSettingsChange('windowLevel', parseFloat(e.target.value))}
+                className="w-full"
               />
             </div>
-
-            {/* Window Width */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                Ширина окна: {(settings.windowWidth * 100).toFixed(0)}%
-              </label>
-              <input
-                type="range"
-                min="0.1"
-                max="2.0"
-                step="0.01"
-                value={settings.windowWidth}
-                onChange={(e) => updateSettings({ windowWidth: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-              />
-            </div>
-
-            {/* Opacity */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Прозрачность: {(settings.opacity * 100).toFixed(0)}%
-              </label>
-              <input
-                type="range"
-                min="0.1"
-                max="1"
-                step="0.01"
-                value={settings.opacity}
-                onChange={(e) => updateSettings({ opacity: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-              />
-            </div>
-
-            {/* Threshold */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Порог отсечения: {(settings.threshold * 100).toFixed(0)}%
+                Ширина окна: {settings.windowWidth.toFixed(2)}
               </label>
               <input
                 type="range"
                 min="0"
-                max="1"
+                max="2"
                 step="0.01"
-                value={settings.threshold}
-                onChange={(e) => updateSettings({ threshold: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                value={settings.windowWidth}
+                onChange={(e) => handleSettingsChange('windowWidth', parseFloat(e.target.value))}
+                className="w-full"
               />
             </div>
+          </div>
 
-            {/* Render Mode */}
+          {volumeData && (
             <div>
-              <label className="block text-sm font-medium mb-2">Режим рендеринга</label>
-              <select
-                value={settings.renderMode}
-                onChange={(e) => updateSettings({ renderMode: e.target.value as any })}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
-              >
-                <option value="volume">Объемный</option>
-                <option value="mip">Максимальная проекция</option>
-                <option value="isosurface">Изоповерхность</option>
-              </select>
+              <label className="block text-sm font-medium mb-2">
+                Срез: {settings.slice} / {volumeData.depth - 1}
+              </label>
+              <input
+                type="range"
+                min="0"
+                max={volumeData.depth - 1}
+                value={settings.slice}
+                onChange={(e) => handleSettingsChange('slice', parseInt(e.target.value))}
+                className="w-full"
+              />
             </div>
+          )}
 
-            {/* Colormap */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Цветовая карта</label>
-              <select
-                value={settings.colormap}
-                onChange={(e) => updateSettings({ colormap: e.target.value as any })}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
-              >
-                <option value="bone">Костная ткань</option>
-                <option value="hot">Горячая</option>
-                <option value="cool">Холодная</option>
-                <option value="gray">Оттенки серого</option>
-              </select>
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => setShowSettings(!showSettings)}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <AdjustmentsHorizontalIcon className="h-4 w-4" />
+              Настройки
+            </Button>
+            <Button
+              onClick={handleExportImage}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <PhotoIcon className="h-4 w-4" />
+              Экспорт изображения
+            </Button>
+            <Button
+              onClick={handleExportData}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <DocumentArrowDownIcon className="h-4 w-4" />
+              Экспорт данных
+            </Button>
+            <Button
+              onClick={() => viewerRef.current?.resetView()}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <EyeIcon className="h-4 w-4" />
+              Сбросить вид
+            </Button>
+          </div>
+
+          {/* Volume Info */}
+          {volumeData && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="font-medium">Ширина</div>
+                <div className="text-gray-600">{volumeData.width}px</div>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="font-medium">Высота</div>
+                <div className="text-gray-600">{volumeData.height}px</div>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="font-medium">Глубина</div>
+                <div className="text-gray-600">{volumeData.depth} срезов</div>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="font-medium">Размер данных</div>
+                <div className="text-gray-600">{(volumeData.data.byteLength / 1024 / 1024).toFixed(2)} MB</div>
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="mt-4 p-3 bg-blue-900/30 rounded-lg">
-            <p className="text-xs text-blue-200">
-              💡 Используйте мышь для вращения, колесо для масштабирования
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-            <p className="text-lg">Загрузка CT данных...</p>
-            <p className="text-sm text-gray-300">Обработка объемного изображения</p>
-          </div>
-        </div>
-      )}
-
-      {/* Instructions */}
-      {!loadedFile && !isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center text-white/60">
-            <PhotoIcon className="w-16 h-16 mx-auto mb-4 text-white/40" />
-            <h3 className="text-xl font-semibold mb-2">Стоматологический 3D визуализатор</h3>
-            <p className="text-sm">Загрузите CT снимок в формате ZIP, VOL, RAW или DICOM</p>
-            <p className="text-xs mt-2">Поддерживаются данные OneVolumeViewer и другие стоматологические форматы</p>
-          </div>
-        </div>
-      )}
+          {!volumeData && !isLoading && (
+            <div className="text-center py-12 text-gray-500">
+              <div className="text-6xl mb-4">🔬</div>
+              <p className="text-lg">Нет данных для просмотра</p>
+              <p className="text-sm">Загрузите объемные данные для 3D визуализации</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
-} 
+}

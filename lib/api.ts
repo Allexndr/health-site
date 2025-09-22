@@ -115,7 +115,7 @@ class ApiClient {
     }
 
     if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`
+      (headers as any).Authorization = `Bearer ${this.token}`
     }
 
     try {
@@ -153,7 +153,7 @@ class ApiClient {
 
     const headers: HeadersInit = {}
     if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`
+      (headers as any).Authorization = `Bearer ${this.token}`
     }
 
     try {
@@ -244,7 +244,7 @@ class ApiClient {
 
   // Image sharing methods
   async shareImage(shareRequest: ShareImageRequest): Promise<ApiResponse<ImageShare>> {
-    return this.request<ImageShare>('/images/share', 'POST', shareRequest)
+    return this.request<ImageShare>('/images/share', { method: 'POST', body: JSON.stringify(shareRequest) })
   }
 
   async getImageShares(type: 'outgoing' | 'incoming'): Promise<ApiResponse<ImageShare[]>> {
@@ -252,7 +252,7 @@ class ApiClient {
   }
 
   async respondToShare(shareId: string, response: ShareResponse): Promise<ApiResponse<ImageShare>> {
-    return this.request<ImageShare>(`/images/shares/${shareId}/respond`, 'POST', response)
+    return this.request<ImageShare>(`/images/shares/${shareId}/respond`, { method: 'POST', body: JSON.stringify(response) })
   }
 
   async getSharedImages(): Promise<ApiResponse<Image[]>> {
@@ -260,7 +260,7 @@ class ApiClient {
   }
 
   async revokeShare(shareId: string): Promise<ApiResponse<void>> {
-    return this.request<void>(`/images/shares/${shareId}`, 'DELETE')
+    return this.request<void>(`/images/shares/${shareId}`, { method: 'DELETE' })
   }
 
   // Helper methods

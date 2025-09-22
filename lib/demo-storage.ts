@@ -196,4 +196,4 @@ export const demoStorage = {
   }
 }
 
-export type { DemoImage } 
+// export type { DemoImage } 

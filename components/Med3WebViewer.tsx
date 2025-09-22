@@ -249,7 +249,7 @@ export default function Med3WebViewer({ onFileLoaded, onError }: Med3WebViewerPr
       } else {
         // Для неизвестных форматов показываем подробную информацию
         console.log('❌ Неподдерживаемый формат:', fileFormat, 'Файл:', file.name)
-        throw new Error(`Неподдерживаемый формат файла: ${fileExtension || 'неизвестно'}`)
+        throw new Error(`Неподдерживаемый формат файла: ${fileFormat || 'неизвестно'}`)
       }
       
       setLoadedFile(file.name)
@@ -264,9 +264,9 @@ export default function Med3WebViewer({ onFileLoaded, onError }: Med3WebViewerPr
       
       // Показываем более информативное сообщение об ошибке
       let errorMessage = 'Ошибка загрузки файла'
-      let errorDescription = error.message
+      let errorDescription = error instanceof Error ? error.message : 'Неизвестная ошибка'
       
-      if (error.message.includes('format') || error.message.includes('unsupported')) {
+      if (errorDescription.includes('format') || errorDescription.includes('unsupported')) {
         errorMessage = 'Неподдерживаемый формат файла'
         errorDescription = 'Med3Web поддерживает DICOM, NIfTI, Analyze и KTX форматы. OneVolumeViewer архивы требуют предварительной обработки.'
       }
@@ -303,7 +303,7 @@ export default function Med3WebViewer({ onFileLoaded, onError }: Med3WebViewerPr
       console.error('❌ Ошибка загрузки по URL:', error)
       onError?.(error as Error)
       toast.error('Ошибка загрузки по URL', {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Неизвестная ошибка',
         duration: 5000
       })
     } finally {
