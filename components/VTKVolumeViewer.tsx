@@ -121,7 +121,7 @@ export default function VTKVolumeViewer({
                   ref={containerRef}
                   className="w-full h-96 flex items-center justify-center"
                 />
-              </div>
+      </div>
 
               {/* Controls */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -167,20 +167,20 @@ export default function VTKVolumeViewer({
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <div className="font-medium">Ширина</div>
                   <div className="text-gray-600">{volumeData.width}px</div>
-                </div>
+          </div>
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <div className="font-medium">Высота</div>
                   <div className="text-gray-600">{volumeData.height}px</div>
-                </div>
+        </div>
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <div className="font-medium">Глубина</div>
                   <div className="text-gray-600">{volumeData.depth} срезов</div>
-                </div>
+            </div>
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <div className="font-medium">Размер данных</div>
                   <div className="text-gray-600">{(volumeData.data.byteLength / 1024 / 1024).toFixed(2)} MB</div>
-                </div>
-              </div>
+            </div>
+          </div>
 
               {/* VTK Info */}
               <div className="bg-blue-50 p-4 rounded-lg">
@@ -189,11 +189,11 @@ export default function VTKVolumeViewer({
                   Использует VTK.js для рендеринга 3D медицинских данных. 
                   Поддерживает различные форматы и обеспечивает высокое качество визуализации.
                 </p>
-              </div>
+        </div>
             </>
-          )}
+      )}
         </CardContent>
       </Card>
     </div>
   )
-}
+} 

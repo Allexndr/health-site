@@ -133,7 +133,7 @@ export default function Viewer3DPage() {
           3D Просмотр Рентгеновских Снимков
         </h1>
         <p className="text-gray-600">
-          Загружайте CT архивы и просматривайте 3D модели зубов прямо в браузере
+          Загружайте CT архивы и просматривайте /* 3D модели зубов */ прямо в браузере
         </p>
       </div>
 
@@ -263,7 +263,7 @@ export default function Viewer3DPage() {
               <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                 <h3 className="font-medium text-blue-900 mb-2">Инструкции по просмотру:</h3>
                 <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Используйте мышь для вращения 3D модели</li>
+                  <li>• Используйте мышь для вращения /* 3D модели */</li>
                   <li>• Колесико мыши для масштабирования</li>
                   <li>• Перетаскивание для перемещения</li>
                   <li>• Переключайтесь между срезами в панели инструментов</li>
