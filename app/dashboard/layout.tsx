@@ -10,7 +10,8 @@ import {
   UsersIcon,
   ShareIcon,
   Cog6ToothIcon,
-  ArrowLeftOnRectangleIcon
+  ArrowLeftOnRectangleIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline'
 
 const navigation = [
