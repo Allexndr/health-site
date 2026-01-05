@@ -4,13 +4,13 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/providers/AuthProvider'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { 
-  HomeIcon, 
-  FolderIcon, 
+import {
+  HomeIcon,
+  FolderIcon,
   UsersIcon,
   ShareIcon,
   Cog6ToothIcon,
-  ArrowLeftOnRectangleIcon 
+  ArrowLeftOnRectangleIcon
 } from '@heroicons/react/24/outline'
 
 const navigation = [
@@ -36,8 +36,11 @@ export default function DashboardLayout({
         <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
           <div className="flex min-h-0 flex-1 flex-col border-r border-gray-200 bg-white">
             <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
-              <div className="flex flex-shrink-0 items-center px-4">
-                <h1 className="text-2xl font-bold text-gray-900">DentalCloud</h1>
+              <div className="flex flex-shrink-0 items-center px-4 space-x-2">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <HeartIcon className="h-5 w-5 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">MediCloud</h1>
               </div>
               <nav className="mt-5 flex-1 space-y-1 bg-white px-2">
                 {navigation.map((item) => (
